@@ -1,0 +1,55 @@
+Applications 
+
+In this section we consider several applications of the data structure, both the trivial uses and some improvements to the data structure.
+Connected components in a graph
+
+This is one of the obvious applications of DSU.
+
+Formally the problem is defined in the following way: Initially we have an empty graph. We have to add vertices and undirected edges, and answer queries of the form (a,b)
+- "are the vertices a and b
+
+in the same connected component of the graph?"
+
+Here we can directly apply the data structure, and get a solution that handles an addition of a vertex or an edge and a query in nearly constant time on average.
+
+This application is quite important, because nearly the same problem appears in Kruskal's algorithm for finding a minimum spanning tree. Using DSU we can improve the O(mlogn+n2)
+complexity to O(mlogn)
+
+.
+Search for connected components in an image
+
+One of the applications of DSU is the following task: there is an image of n×m
+
+pixels. Originally all are white, but then a few black pixels are drawn. You want to determine the size of each white connected component in the final image.
+
+For the solution we simply iterate over all white pixels in the image, for each cell iterate over its four neighbors, and if the neighbor is white call union_sets. Thus we will have a DSU with nm
+
+nodes corresponding to image pixels. The resulting trees in the DSU are the desired connected components.
+
+The problem can also be solved by DFS or BFS, but the method described here has an advantage: it can process the matrix row by row (i.e. to process a row we only need the previous and the current row, and only need a DSU built for the elements of one row) in O(min(n,m))
+
+memory.
+Store additional information for each set
+
+DSU allows you to easily store additional information in the sets.
+
+A simple example is the size of the sets: storing the sizes was already described in the Union by size section (the information was stored by the current representative of the set).
+
+In the same way - by storing it at the representative nodes - you can also store any other information about the sets.
+Compress jumps along a segment / Painting subarrays offline
+
+One common application of the DSU is the following: There is a set of vertices, and each vertex has an outgoing edge to another vertex. With DSU you can find the end point, to which we get after following all edges from a given starting point, in almost constant time.
+
+A good example of this application is the problem of painting subarrays. We have a segment of length L
+, each element initially has the color 0. We have to repaint the subarray [l;r] with the color c for each query (l,r,c)
+
+. At the end we want to find the final color of each cell. We assume that we know all the queries in advance, i.e. the task is offline.
+
+For the solution we can make a DSU, which for each cell stores a link to the next unpainted cell. Thus initially each cell points to itself. After painting one requested repaint of a segment, all cells from that segment will point to the cell after the segment.
+
+Now to solve this problem, we consider the queries in the reverse order: from last to first. This way when we execute a query, we only have to paint exactly the unpainted cells in the subarray [l;r]
+
+. All other cells already contain their final color. To quickly iterate over all unpainted cells, we use the DSU. We find the left-most unpainted cell inside of a segment, repaint it, and with the pointer we move to the next empty cell to the right.
+
+Here we can use the DSU with path compression, but we cannot use union by rank / size (because it is important who becomes the leader after the merge). Therefore the complexity will be O(logn)
+per union (which is also quite fast).

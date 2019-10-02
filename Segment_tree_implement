@@ -1,0 +1,52 @@
+Implementation
+
+The main consideration is how to store the Segment Tree. Of course we can define a Vertex struct and create objects, that store the boundaries of the segment, its sum and additionally also pointers to its child vertices. However this requires storing a lot of redundant information. We will use a simple trick, to make this a lot more efficient. We only store the sums in an array. The sum of the root vertex at index 1, the sums of its two child vertices at indices 2 and 3, the sums of the children of those two vertices at indices 4 to 7, and so on. It is easy to see, that the left child of a vertex at index i is stored at index 2i, and the right one at index 2i+1.
+
+This simplifies the implementation a lot. We don't need to store the structure of the tree in memory. It is defined implicitly. We only need one array which contains the sums of all segments.
+
+As noted before, we need to store at most 4n vertices. It might be less, but for convenience we always allocate an array of size 4n. There will be some elements in the sum array, that will not correspond to any vertices in the actual tree, but this doesn't complicate the implementation.
+
+So, we store the Segment Tree simply as an array t[] with a size of four times the input size n:
+
+int n, t[4*MAXN];
+
+The procedure for constructing the Segment Tree from a given array a[] looks like this: it is a recursive function with the parameters a[] (the input array), v (the index of the current vertex), and the boundaries tl and tr of the current segment. In the main program this function will be called with the parameters of the root vertex: v=1, tl=0, and tr=n−1.
+
+void build(int a[], int v, int tl, int tr) {
+    if (tl == tr) {
+        t[v] = a[tl];
+    } else {
+        int tm = (tl + tr) / 2;
+        build(a, v*2, tl, tm);
+        build(a, v*2+1, tm+1, tr);
+        t[v] = t[v*2] + t[v*2+1];
+    }
+}
+
+Further the function for answering sum queries is also a recursive function, which receives as parameters information about the current vertex/segment (i.e. the index v and the boundaries tl and tr) and also the information about the boundaries of the query, l and r. In order to simplify the code, this function always does two recursive calls, even if only one is necessary - in that case the superfluous recursive call will have l>r, and this can easily be caught using an additional check at the beginning of the function.
+
+int sum(int v, int tl, int tr, int l, int r) {
+    if (l > r) 
+        return 0;
+    if (l == tl && r == tr) {
+        return t[v];
+    }
+    int tm = (tl + tr) / 2;
+    return sum(v*2, tl, tm, l, min(r, tm))
+           + sum(v*2+1, tm+1, tr, max(l, tm+1), r);
+}
+
+Finally the update query. The function will also receive information about the current vertex/segment, and additionally also the parameter of the update query (i.e. the position of the element and its new value).
+
+void update(int v, int tl, int tr, int pos, int new_val) {
+    if (tl == tr) {
+        t[v] = new_val;
+    } else {
+        int tm = (tl + tr) / 2;
+        if (pos <= tm)
+            update(v*2, tl, tm, pos, new_val);
+        else
+            update(v*2+1, tm+1, tr, pos, new_val);
+        t[v] = t[v*2] + t[v*2+1];
+    }
+}
